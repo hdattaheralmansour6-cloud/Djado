@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Djado">
 <meta name="theme-color" content="#08070a">
+<link rel="manifest" href="manifest.json">
 
 <style>
 /* ==========================================================================
@@ -1184,6 +1185,18 @@ body{
 
   initialiser();
 })();
+</script>
+
+<!-- Enregistrement du Service Worker : permet le fonctionnement hors ligne
+     après la première ouverture de l'application -->
+<script>
+  if ('serviceWorker' in navigator){
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {
+        // Échec silencieux : l'application continue de fonctionner normalement en ligne
+      });
+    });
+  }
 </script>
 
 </body>
