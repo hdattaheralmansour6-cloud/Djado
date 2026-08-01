@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Djado — Calculateur d'achat d'or</title>
+
+<style>
+/* ==========================================================================
+   CALCULATEUR D'ACHAT D'OR — Application premium noir & or
+   Fichier unique, autonome, sans dépendance externe (fonctionne hors ligne)
+   ========================================================================== */
+
+:root{
+  /* --- Palette --- */
+  --noir-fond:        #08070a;
+  --noir-panneau:     #121014;
+  --or-vif:           #f0cf6c;
+  --or-clair:         #f7e3a1;
+  --or-fonce:         #a8791f;
+  --or-bronze:        #8a5a1f;
+  --blanc-chaud:      #f3ede0;
+  --gris-doux:        #a79c8a;
+  --verre-bord:       rgba(240, 207, 108, 0.18);
+  --verre-fond:       rgba(255, 255, 255, 0.035);
+  --succes:           #7fce8c;
+  --danger:           #e0665f;
+
+  /* --- Typographie --- */
+  --police-titre: Georgia, 'Times New Roman', 'Iowan Old Style', serif;
+  --police-corps: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+  /* --- Ombres --- */
+  --ombre-carte: 0 20px 60px -15px rgba(0,0,0,0.7), 0 4px 20px rgba(0,0,0,0.4);
+  --ombre-or:    0 8px 24px -8px rgba(240,207,108,0.35);
+}
+
+*{ box-sizing: border-box; margin:0; padding:0; }
+
+html{ scroll-behavior: smooth; }
+
+body{
+  min-height: 100vh;
+  font-family: var(--police-corps);
+  color: var(--blanc-chaud);
+  background: radial-gradient(1200px 800px at 15% -10%, rgba(168,121,31,0.18), transparent 60%),
+              radial-gradient(1000px 700px at 110% 10%, rgba(240,207,108,0.10), transparent 55%),
+              linear-gradient(180deg, #0b0a0d 0%, #08070a 40%, #0a0906 100%);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Texture ambiante : fines particules dorées immobiles en fond */
+.fond-ambiance{
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(240,207,108,0.25) 0, transparent 100%),
+    radial-gradient(1px 1px at 75% 15%, rgba(240,207,108,0.18) 0, transparent 100%),
+    radial-gradient(1.5px 1.5px at 55% 70%, rgba(240,207,108,0.15) 0, transparent 100%),
+    radial-gradient(1px 1px at 90% 80%, rgba(240,207,108,0.20) 0, transparent 100%),
+    radial-gradient(1px 1px at 10% 85%, rgba(240,207,108,0.15) 0, transparent 100%);
+  opacity: 0.6;
+}
+
+.conteneur{
+  position: relative; z-index: 1;
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+/* ---------- En-tête ---------- */
+.entete{
+  text-align: center;
+  margin-bottom: 34px;
+  animation: apparition 0.7s ease both;
+}
+
+.blason{
+  width: 64px; height: 64px;
+  margin: 0 auto 14px;
+  color: var(--or-vif);
+  animation: flotter 4s ease-in-out infinite;
+}
+
+.entete h1{
+  font-family: var(--police-titre);
+  font-weight: 700;
+  font-size: clamp(34px, 8vw, 48px);
+  letter-spacing: 1px;
+  background: linear-gradient(120deg, var(--or-fonce) 0%, var(--or-clair) 35%, var(--or-vif) 50%, var(--or-clair) 65%, var(--or-fonce) 100%);
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: chatoiement 6s linear infinite;
+}
+
+.sous-titre-app{
+  margin-top: 8px;
+  font-size: 15.5px;
+  font-weight: 600;
+  color: var(--blanc-chaud);
+  letter-spacing: 0.3px;
+}
+
+.tagline-app{
+  margin-top: 6px;
+  color: var(--gris-doux);
+  font-size: 13px;
+  letter-spacing: 0.4px;
+}
+
+.badge-connexion{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 14px auto 0;
+  padding: 5px 13px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.10);
+  color: var(--gris-doux);
+  width: fit-content;
+}
+
+.badge-connexion.connecte{
+  color: var(--succes);
+  background: rgba(127,206,140,0.08);
+  border-color: rgba(127,206,140,0.3);
+}
+
+.badge-connexion.hors-ligne{
+  color: var(--gris-doux);
+  background: rgba(255,255,255,0.03);
+}
+
+/* ---------- Cartes en verre (glassmorphism) ---------- */
+.carte{
+  background: var(--verre-fond);
+  border: 1px solid var(--verre-bord);
+  border-radius: 24px;
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: var(--ombre-carte);
+  padding: 28px;
+  margin-bottom: 22px;
+  animation: apparition 0.7s ease both;
+}
+
+.carte-principale{ animation-delay: 0.05s; }
+.carte-stats{ animation-delay: 0.12s; padding: 20px; }
+.carte-historique{ animation-delay: 0.18s; }
+
+/* ---------- Champs de saisie ---------- */
+.groupe-champ{ margin-bottom: 18px; }
+
+.groupe-champ label{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.9px;
+  color: var(--or-vif);
+  margin-bottom: 9px;
+}
+
+.groupe-champ label svg{ width: 15px; height: 15px; opacity: 0.9; }
+
+.enveloppe-champ{ position: relative; }
+
+.enveloppe-champ input{
+  width: 100%;
+  padding: 15px 18px;
+  font-family: var(--police-corps);
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--blanc-chaud);
+  background: rgba(255,255,255,0.03);
+  border: 1.5px solid rgba(240,207,108,0.16);
+  border-radius: 14px;
+  outline: none;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+  -moz-appearance: textfield;
+}
+
+.enveloppe-champ input::-webkit-outer-spin-button,
+.enveloppe-champ input::-webkit-inner-spin-button{
+  -webkit-appearance: none; margin: 0;
+}
+
+.enveloppe-champ input::placeholder{ color: rgba(167,156,138,0.55); font-weight: 400; }
+
+.enveloppe-champ input:focus{
+  border-color: var(--or-vif);
+  background: rgba(240,207,108,0.05);
+  box-shadow: 0 0 0 4px rgba(240,207,108,0.10);
+}
+
+.enveloppe-champ .unite{
+  position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
+  font-size: 13.5px; color: var(--gris-doux); font-weight: 600; pointer-events: none;
+}
+
+/* ---------- Boutons de prix rapide ---------- */
+.prix-rapides{ margin-bottom: 22px; }
+
+.prix-rapides .etiquette{
+  font-size: 12px; color: var(--gris-doux); text-transform: uppercase;
+  letter-spacing: 0.8px; margin-bottom: 10px; display: block;
+}
+
+.grille-prix{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+}
+
+.btn-prix{
+  padding: 11px 6px;
+  font-family: var(--police-corps);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--or-clair);
+  background: rgba(240,207,108,0.06);
+  border: 1px solid rgba(240,207,108,0.22);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.2px;
+}
+
+.btn-prix:hover{
+  background: rgba(240,207,108,0.14);
+  border-color: var(--or-vif);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px -6px rgba(240,207,108,0.4);
+}
+
+.btn-prix:active{ transform: translateY(0) scale(0.97); }
+
+.btn-prix.actif{
+  background: linear-gradient(135deg, var(--or-fonce), var(--or-vif));
+  color: #1a1305;
+  border-color: transparent;
+}
+
+/* Bouton de prix personnalisé (ajouté par l'utilisateur) */
+.btn-prix-perso{
+  position: relative;
+}
+
+.btn-prix-perso .retirer-prix{
+  position: absolute;
+  top: -6px; right: -6px;
+  width: 18px; height: 18px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--danger);
+  color: #1a1305;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  border: 1.5px solid var(--noir-fond);
+  cursor: pointer;
+}
+
+/* Zone d'ajout d'un nouveau prix */
+.ajout-prix{
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.ajout-prix input{
+  flex: 1;
+  padding: 11px 14px;
+  font-family: var(--police-corps);
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--blanc-chaud);
+  background: rgba(255,255,255,0.03);
+  border: 1.5px dashed rgba(240,207,108,0.28);
+  border-radius: 12px;
+  outline: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.ajout-prix input::placeholder{ color: rgba(167,156,138,0.55); font-weight: 400; }
+
+.ajout-prix input:focus{
+  border-style: solid;
+  border-color: var(--or-vif);
+  background: rgba(240,207,108,0.05);
+}
+
+.ajout-prix button{
+  flex-shrink: 0;
+  width: 44px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1305;
+  background: linear-gradient(135deg, var(--or-fonce), var(--or-vif));
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+.ajout-prix button:hover{ filter: brightness(1.08); }
+.ajout-prix button:active{ transform: scale(0.95); }
+
+/* ---------- Panneau résultat ---------- */
+.panneau-resultat{
+  position: relative;
+  text-align: center;
+  padding: 26px 20px 24px;
+  border-radius: 18px;
+  background: linear-gradient(160deg, rgba(240,207,108,0.10), rgba(168,121,31,0.04));
+  border: 1px solid rgba(240,207,108,0.25);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.panneau-resultat::before{
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,0.06) 45%, transparent 60%);
+  background-size: 250% 100%;
+  animation: reflet 5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.piece-icone{
+  width: 34px; height: 34px;
+  margin: 0 auto 10px;
+  color: var(--or-vif);
+  animation: rotation-piece 5s linear infinite;
+  transform-style: preserve-3d;
+}
+
+.panneau-resultat .libelle-total{
+  font-size: 12.5px;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  color: var(--gris-doux);
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.montant-total{
+  font-family: var(--police-titre);
+  font-size: clamp(30px, 8vw, 46px);
+  font-weight: 700;
+  color: var(--or-clair);
+  letter-spacing: 0.5px;
+  font-variant-numeric: tabular-nums;
+  transition: transform 0.15s ease;
+  position: relative;
+}
+
+.montant-total.eclat{ animation: pulsation 0.45s ease; }
+
+.detail-calcul{
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--gris-doux);
+  position: relative;
+}
+
+/* ---------- Actions ---------- */
+.actions{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.btn{
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 13px 16px;
+  font-family: var(--police-corps);
+  font-size: 14.5px;
+  font-weight: 700;
+  border-radius: 13px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  letter-spacing: 0.2px;
+}
+
+.btn svg{ width: 17px; height: 17px; }
+
+.btn-secondaire{
+  background: rgba(255,255,255,0.04);
+  color: var(--blanc-chaud);
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+.btn-secondaire:hover{ background: rgba(255,255,255,0.08); transform: translateY(-1px); }
+
+.btn-or{
+  background: linear-gradient(135deg, var(--or-fonce), var(--or-vif) 55%, var(--or-clair));
+  color: #1a1305;
+  box-shadow: var(--ombre-or);
+}
+
+.btn-or:hover{ filter: brightness(1.08); transform: translateY(-1px); }
+.btn:active{ transform: translateY(0) scale(0.97); }
+
+/* ---------- Statistiques ---------- */
+.grille-stats{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  text-align: center;
+}
+
+.stat .valeur-stat{
+  font-family: var(--police-titre);
+  font-size: clamp(17px, 4vw, 22px);
+  font-weight: 700;
+  color: var(--or-clair);
+  font-variant-numeric: tabular-nums;
+}
+
+.stat .libelle-stat{
+  font-size: 11px;
+  color: var(--gris-doux);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-top: 5px;
+}
+
+/* ---------- Historique ---------- */
+.entete-historique{
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.entete-historique h2{
+  font-family: var(--police-titre);
+  font-size: 19px;
+  color: var(--or-clair);
+  display: flex; align-items: center; gap: 9px;
+}
+
+.entete-historique h2 svg{ width: 18px; height: 18px; }
+
+.btn-vider{
+  font-size: 12.5px;
+  color: var(--danger);
+  background: rgba(224,102,95,0.08);
+  border: 1px solid rgba(224,102,95,0.3);
+  padding: 7px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-vider:hover{ background: rgba(224,102,95,0.16); }
+
+.liste-historique{
+  display: flex; flex-direction: column; gap: 9px;
+  max-height: 340px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.liste-historique::-webkit-scrollbar{ width: 5px; }
+.liste-historique::-webkit-scrollbar-thumb{ background: rgba(240,207,108,0.25); border-radius: 10px; }
+
+.ligne-historique{
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 14px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 13px;
+  animation: glisser-entree 0.35s ease both;
+}
+
+.ligne-historique .infos-ligne{ display: flex; flex-direction: column; gap: 2px; }
+
+.ligne-historique .heure-ligne{ font-size: 11px; color: var(--gris-doux); }
+
+.ligne-historique .detail-ligne{ font-size: 13.5px; color: var(--blanc-chaud); }
+
+.ligne-historique .detail-ligne b{ color: var(--or-clair); }
+
+.ligne-historique .total-ligne{
+  font-weight: 700;
+  color: var(--or-clair);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  margin-right: 10px;
+  white-space: nowrap;
+}
+
+.btn-supprimer-ligne{
+  width: 30px; height: 30px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(224,102,95,0.08);
+  border: 1px solid rgba(224,102,95,0.25);
+  border-radius: 9px;
+  color: var(--danger);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-supprimer-ligne:hover{ background: rgba(224,102,95,0.2); }
+.btn-supprimer-ligne svg{ width: 14px; height: 14px; }
+
+.etat-vide{
+  text-align: center;
+  padding: 30px 10px;
+  color: var(--gris-doux);
+  font-size: 13.5px;
+}
+
+.etat-vide svg{ width: 30px; height: 30px; opacity: 0.4; margin-bottom: 10px; }
+
+/* ---------- Signature ---------- */
+.signature{
+  text-align: center;
+  margin-top: 6px;
+  padding: 16px 10px 4px;
+  font-size: 12.5px;
+  color: var(--gris-doux);
+  letter-spacing: 0.4px;
+  animation: apparition 0.7s ease both;
+  animation-delay: 0.24s;
+}
+
+.signature span{ opacity: 0.85; }
+
+.signature .separateur-signature{
+  margin: 0 8px;
+  color: var(--or-fonce);
+}
+
+/* ---------- Toast (notification copie) ---------- */
+.toast{
+  position: fixed;
+  bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: linear-gradient(135deg, var(--or-fonce), var(--or-vif));
+  color: #1a1305;
+  padding: 13px 22px;
+  border-radius: 30px;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex; align-items: center; gap: 8px;
+  box-shadow: 0 12px 30px -8px rgba(240,207,108,0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 100;
+}
+
+.toast svg{ width: 16px; height: 16px; }
+.toast.visible{ opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+
+/* ---------- Animations ---------- */
+@keyframes apparition{
+  from{ opacity: 0; transform: translateY(14px); }
+  to{ opacity: 1; transform: translateY(0); }
+}
+
+@keyframes flotter{
+  0%, 100%{ transform: translateY(0); }
+  50%{ transform: translateY(-5px); }
+}
+
+@keyframes chatoiement{
+  to{ background-position: -220% center; }
+}
+
+@keyframes reflet{
+  0%{ background-position: -250% 0; }
+  50%, 100%{ background-position: 250% 0; }
+}
+
+@keyframes rotation-piece{
+  0%{ transform: rotateY(0deg); }
+  100%{ transform: rotateY(360deg); }
+}
+
+@keyframes pulsation{
+  0%{ transform: scale(1); }
+  40%{ transform: scale(1.045); }
+  100%{ transform: scale(1); }
+}
+
+@keyframes glisser-entree{
+  from{ opacity: 0; transform: translateX(-8px); }
+  to{ opacity: 1; transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 480px){
+  .conteneur{ padding: 28px 14px 60px; }
+  .carte{ padding: 20px; border-radius: 20px; }
+  .grille-prix{ grid-template-columns: repeat(3, 1fr); gap: 7px; }
+  .btn-prix{ font-size: 12.5px; padding: 10px 4px; }
+  .grille-stats{ gap: 8px; }
+}
+
+@media (min-width: 700px){
+  .conteneur{ max-width: 680px; }
+}
+</style>
+</head>
+<body>
+
+<div class="fond-ambiance"></div>
+
+<div class="conteneur">
+
+  <!-- ===================== EN-TÊTE ===================== -->
+  <header class="entete">
+    <svg class="blason" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Soleil du désert -->
+      <circle cx="32" cy="20" r="7" stroke="currentColor" stroke-width="1.6"/>
+      <path d="M32 8v3M32 29v3M20 20h3M41 20h3M23.5 11.5l2 2M38.5 11.5l-2 2M23.5 28.5l2-2M38.5 28.5l-2-2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      <!-- Dunes de sable -->
+      <path d="M2 46c6-8 12-8 18 0s12 8 18 0 12-8 18 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M2 54c6-6 12-6 18 0s12 6 18 0 12-6 18 0" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity="0.55"/>
+    </svg>
+    <h1>Djado</h1>
+    <p class="sous-titre-app">Calculateur d'achat d'or</p>
+    <p class="tagline-app">Estimation instantanée du prix d'achat auprès des orpailleurs</p>
+    <p class="badge-connexion" id="badgeConnexion">Connexion…</p>
+  </header>
+
+  <!-- ===================== CARTE PRINCIPALE : SAISIE + RÉSULTAT ===================== -->
+  <main class="carte carte-principale">
+
+    <!-- Champ Poids -->
+    <div class="groupe-champ">
+      <label for="champPoids">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M6 3h12l3 6-9 12L3 9l3-6z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M9 9h6M3 9h18" stroke="currentColor" stroke-width="1.2"/></svg>
+        Poids (grammes)
+      </label>
+      <div class="enveloppe-champ">
+        <input type="number" id="champPoids" inputmode="decimal" step="0.01" min="0" placeholder="Ex : 15,8">
+        <span class="unite">g</span>
+      </div>
+    </div>
+
+    <!-- Champ Prix du gramme -->
+    <div class="groupe-champ">
+      <label for="champPrix">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v18M16.5 7.5c0-1.9-2-3-4.5-3s-4.5 1.2-4.5 3 2 2.7 4.5 3 4.5 1.1 4.5 3-2 3-4.5 3-4.5-1.1-4.5-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        Prix du gramme (FCFA)
+      </label>
+      <div class="enveloppe-champ">
+        <input type="number" id="champPrix" inputmode="numeric" step="1" min="0" placeholder="Ex : 67 000">
+        <span class="unite">FCFA</span>
+      </div>
+    </div>
+
+    <!-- Boutons de prix rapide -->
+    <div class="prix-rapides">
+      <span class="etiquette">Prix rapide du gramme</span>
+      <div class="grille-prix" id="grillePrix"></div>
+      <div class="ajout-prix">
+        <input type="number" id="champNouveauPrix" inputmode="numeric" min="0" step="500" placeholder="Ajouter un prix, ex : 71 000">
+        <button type="button" id="btnAjouterPrix" title="Ajouter ce prix">+</button>
+      </div>
+    </div>
+
+    <!-- Résultat -->
+    <div class="panneau-resultat">
+      <svg class="piece-icone" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-width="1.4"/>
+        <circle cx="12" cy="12" r="6.8" stroke="currentColor" stroke-width="0.9"/>
+        <text x="12" y="15.5" font-size="7" text-anchor="middle" fill="currentColor" font-family="Georgia, serif">Au</text>
+      </svg>
+      <div class="libelle-total">Total à payer</div>
+      <div class="montant-total" id="montantTotal">0 FCFA</div>
+      <div class="detail-calcul" id="detailCalcul">0 g × 0 FCFA</div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button class="btn btn-secondaire" id="btnEffacer">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m2 0l-.7 12.1a2 2 0 01-2 1.9H8.7a2 2 0 01-2-1.9L6 7h12z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Effacer
+      </button>
+      <button class="btn btn-or" id="btnCopier">
+        <svg viewBox="0 0 24 24" fill="none"><rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2" stroke="currentColor" stroke-width="1.4"/></svg>
+        Copier le montant
+      </button>
+    </div>
+  </main>
+
+  <!-- ===================== STATISTIQUES ===================== -->
+  <section class="carte carte-stats">
+    <div class="grille-stats">
+      <div class="stat">
+        <div class="valeur-stat" id="statNombre">0</div>
+        <div class="libelle-stat">Calculs</div>
+      </div>
+      <div class="stat">
+        <div class="valeur-stat" id="statPoids">0 g</div>
+        <div class="libelle-stat">Or total</div>
+      </div>
+      <div class="stat">
+        <div class="valeur-stat" id="statMontant">0 FCFA</div>
+        <div class="libelle-stat">Montant total</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== HISTORIQUE ===================== -->
+  <section class="carte carte-historique">
+    <div class="entete-historique">
+      <h2>
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 12a9 9 0 109-9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M3 4v5h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Historique
+      </h2>
+      <button class="btn-vider" id="btnVider">Vider tout</button>
+    </div>
+    <div class="liste-historique" id="listeHistorique"></div>
+  </section>
+  <!-- ===================== SIGNATURE ===================== -->
+  <footer class="signature">
+    <span>Hdattaher Almansour</span>
+    <span class="separateur-signature">•</span>
+    <span>Enfant d'Abalak</span>
+  </footer>
+
+</div>
+
+<!-- Toast de confirmation -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4.5 4.5L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <span id="toastTexte">Montant copié !</span>
+</div>
+
+<script>
+/* ==========================================================================
+   CALCULATEUR D'ACHAT D'OR — Logique JavaScript
+   ========================================================================== */
+
+(function(){
+  'use strict';
+
+  // ---------- Références DOM ----------
+  const champPoids      = document.getElementById('champPoids');
+  const champPrix       = document.getElementById('champPrix');
+  const montantTotalEl  = document.getElementById('montantTotal');
+  const detailCalculEl  = document.getElementById('detailCalcul');
+  const grillePrixEl    = document.getElementById('grillePrix');
+  const champNouveauPrix = document.getElementById('champNouveauPrix');
+  const btnAjouterPrix  = document.getElementById('btnAjouterPrix');
+  const btnEffacer      = document.getElementById('btnEffacer');
+  const btnCopier       = document.getElementById('btnCopier');
+  const btnVider        = document.getElementById('btnVider');
+  const listeHistoriqueEl = document.getElementById('listeHistorique');
+  const statNombreEl    = document.getElementById('statNombre');
+  const statPoidsEl     = document.getElementById('statPoids');
+  const statMontantEl   = document.getElementById('statMontant');
+  const toastEl         = document.getElementById('toast');
+  const toastTexteEl    = document.getElementById('toastTexte');
+  const badgeConnexionEl = document.getElementById('badgeConnexion');
+
+  const CLE_STOCKAGE = 'calculateurOr_historique';
+  const CLE_PRIX_PERSO = 'calculateurOr_prixPersonnalises';
+  const PRIX_PAR_DEFAUT = [65000, 66000, 67000, 68000, 69000, 70000];
+
+  // ---------- Configuration Supabase ----------
+  // Remplacez ces deux valeurs par celles de votre projet Supabase
+  // (Project Settings → API → Project URL / anon public key).
+  const SUPABASE_URL = 'https://diivpmnchduhfhqqpxwh.supabase.co';
+  const SUPABASE_CLE_ANON = 'sb_publishable_gYauFyRrQ3x7B1-InmJxXg_hvTbapzN';
+  const SUPABASE_TABLE = 'calculs_or';
+  const supabaseConfigure = !SUPABASE_URL.includes('VOTRE-PROJET') && !SUPABASE_CLE_ANON.includes('VOTRE_CLE');
+
+  let historique = [];
+  let prixPersonnalises = [];
+  let toastMinuteur = null;
+
+  // ---------- Formatage des nombres (séparateur de milliers français) ----------
+  const formateurNombre = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 });
+  const formateurPoids  = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 });
+
+  function formaterMontant(valeur){
+    return formateurNombre.format(Math.round(valeur || 0)) + ' FCFA';
+  }
+
+  function formaterPoids(valeur){
+    return formateurPoids.format(valeur || 0) + ' g';
+  }
+
+  // ---------- Prix personnalisés (LocalStorage) ----------
+  function chargerPrixPersonnalises(){
+    try{
+      const donnees = localStorage.getItem(CLE_PRIX_PERSO);
+      prixPersonnalises = donnees ? JSON.parse(donnees) : [];
+    }catch(erreur){
+      prixPersonnalises = [];
+    }
+  }
+
+  function sauvegarderPrixPersonnalises(){
+    try{
+      localStorage.setItem(CLE_PRIX_PERSO, JSON.stringify(prixPersonnalises));
+    }catch(erreur){
+      console.warn('Impossible de sauvegarder les prix personnalisés.', erreur);
+    }
+  }
+
+  function listePrixComplete(){
+    // Fusionne les prix par défaut et les prix personnalisés, sans doublon, triés par ordre croissant
+    const ensemble = new Set([...PRIX_PAR_DEFAUT, ...prixPersonnalises]);
+    return Array.from(ensemble).sort((a, b) => a - b);
+  }
+
+  // ---------- Construction des boutons de prix rapide ----------
+  function construirePrixRapides(){
+    grillePrixEl.innerHTML = '';
+    listePrixComplete().forEach(prix => {
+      const estPersonnalise = prixPersonnalises.includes(prix);
+
+      const bouton = document.createElement('button');
+      bouton.type = 'button';
+      bouton.className = 'btn-prix' + (estPersonnalise ? ' btn-prix-perso' : '');
+      bouton.dataset.prix = prix;
+      bouton.textContent = formateurNombre.format(prix);
+
+      bouton.addEventListener('click', () => {
+        champPrix.value = prix;
+        marquerBoutonActif(prix);
+        calculerEtAfficher();
+        champPoids.focus();
+      });
+
+      // Les prix ajoutés par l'utilisateur peuvent être retirés individuellement
+      if (estPersonnalise){
+        const retirer = document.createElement('span');
+        retirer.className = 'retirer-prix';
+        retirer.textContent = '×';
+        retirer.title = 'Retirer ce prix';
+        retirer.addEventListener('click', (evenement) => {
+          evenement.stopPropagation();
+          retirerPrixPersonnalise(prix);
+        });
+        bouton.appendChild(retirer);
+      }
+
+      grillePrixEl.appendChild(bouton);
+    });
+  }
+
+  function marquerBoutonActif(prix){
+    document.querySelectorAll('.btn-prix').forEach(b => {
+      b.classList.toggle('actif', Number(b.dataset.prix) === Number(prix));
+    });
+  }
+
+  function ajouterPrixPersonnalise(){
+    const valeur = parseFloat(champNouveauPrix.value.replace(',', '.'));
+
+    if (!valeur || valeur <= 0){
+      afficherToast('Entrez un prix valide.');
+      return;
+    }
+    if (listePrixComplete().includes(valeur)){
+      afficherToast('Ce prix existe déjà.');
+      champNouveauPrix.value = '';
+      return;
+    }
+
+    prixPersonnalises.push(valeur);
+    sauvegarderPrixPersonnalises();
+    construirePrixRapides();
+
+    champPrix.value = valeur;
+    marquerBoutonActif(valeur);
+    calculerEtAfficher();
+
+    champNouveauPrix.value = '';
+    afficherToast('Prix ' + formateurNombre.format(valeur) + ' FCFA ajouté');
+  }
+
+  function retirerPrixPersonnalise(prix){
+    prixPersonnalises = prixPersonnalises.filter(p => p !== prix);
+    sauvegarderPrixPersonnalises();
+    construirePrixRapides();
+  }
+
+  // ---------- Calcul principal ----------
+  function calculerEtAfficher(){
+    const poids = parseFloat(champPoids.value.replace(',', '.')) || 0;
+    const prix  = parseFloat(champPrix.value.replace(',', '.')) || 0;
+    const total = poids * prix;
+
+    montantTotalEl.textContent = formaterMontant(total);
+    detailCalculEl.textContent = formaterPoids(poids) + ' × ' + formaterMontant(prix).replace(' FCFA','') + ' FCFA';
+
+    // Petite animation d'éclat lors de la mise à jour
+    montantTotalEl.classList.remove('eclat');
+    // Force le reflow pour pouvoir rejouer l'animation
+    void montantTotalEl.offsetWidth;
+    montantTotalEl.classList.add('eclat');
+
+    // Désactive visuellement le bouton rapide si le prix a été modifié manuellement
+    if (!listePrixComplete().includes(Number(prix))) {
+      document.querySelectorAll('.btn-prix').forEach(b => b.classList.remove('actif'));
+    }
+
+    return { poids, prix, total };
+  }
+
+  // ---------- Historique (LocalStorage) ----------
+  function chargerHistorique(){
+    try{
+      const donnees = localStorage.getItem(CLE_STOCKAGE);
+      historique = donnees ? JSON.parse(donnees) : [];
+    }catch(erreur){
+      historique = [];
+    }
+  }
+
+  function sauvegarderHistorique(){
+    try{
+      localStorage.setItem(CLE_STOCKAGE, JSON.stringify(historique));
+    }catch(erreur){
+      // Stockage indisponible : l'application continue de fonctionner en mémoire
+      console.warn('Impossible de sauvegarder l\'historique.', erreur);
+    }
+  }
+
+  // ---------- Synchronisation Supabase (base de données partagée) ----------
+  function appelSupabase(chemin, options){
+    return fetch(SUPABASE_URL + '/rest/v1/' + chemin, Object.assign({
+      headers: Object.assign({
+        'apikey': SUPABASE_CLE_ANON,
+        'Authorization': 'Bearer ' + SUPABASE_CLE_ANON,
+        'Content-Type': 'application/json'
+      }, (options && options.headers) || {})
+    }, options));
+  }
+
+  function definirBadgeConnexion(etat){
+    badgeConnexionEl.classList.remove('connecte', 'hors-ligne');
+    if (etat === 'connecte'){
+      badgeConnexionEl.textContent = '☁️ Connecté à Supabase';
+      badgeConnexionEl.classList.add('connecte');
+    } else {
+      badgeConnexionEl.textContent = '📴 Mode hors ligne (local)';
+      badgeConnexionEl.classList.add('hors-ligne');
+    }
+  }
+
+  async function chargerHistoriqueDepuisSupabase(){
+    if (!supabaseConfigure){
+      definirBadgeConnexion('hors-ligne');
+      return false;
+    }
+    try{
+      const reponse = await appelSupabase(SUPABASE_TABLE + '?select=*&order=created_at.desc&limit=500');
+      if (!reponse.ok) throw new Error('Réponse Supabase invalide');
+      const lignes = await reponse.json();
+      historique = lignes.map(ligne => ({
+        id: ligne.id, heure: ligne.heure, poids: Number(ligne.poids),
+        prix: Number(ligne.prix), total: Number(ligne.total)
+      }));
+      sauvegarderHistorique();
+      definirBadgeConnexion('connecte');
+      return true;
+    }catch(erreur){
+      definirBadgeConnexion('hors-ligne');
+      return false;
+    }
+  }
+
+  function envoyerEntreeSupabase(entree){
+    if (!supabaseConfigure) return;
+    appelSupabase(SUPABASE_TABLE, {
+      method: 'POST',
+      body: JSON.stringify({
+        id: entree.id, heure: entree.heure,
+        poids: entree.poids, prix: entree.prix, total: entree.total
+      })
+    }).then(reponse => definirBadgeConnexion(reponse.ok ? 'connecte' : 'hors-ligne'))
+      .catch(() => definirBadgeConnexion('hors-ligne'));
+  }
+
+  function supprimerEntreeSupabase(id){
+    if (!supabaseConfigure) return;
+    appelSupabase(SUPABASE_TABLE + '?id=eq.' + encodeURIComponent(id), { method: 'DELETE' })
+      .catch(() => definirBadgeConnexion('hors-ligne'));
+  }
+
+  function viderHistoriqueSupabase(){
+    if (!supabaseConfigure) return;
+    appelSupabase(SUPABASE_TABLE + '?created_at=gt.1900-01-01', { method: 'DELETE' })
+      .catch(() => definirBadgeConnexion('hors-ligne'));
+  }
+
+  function ajouterEntreeHistorique(poids, prix, total){
+    if (poids <= 0 || prix <= 0) return;
+
+    const maintenant = new Date();
+    const heure = maintenant.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+    historique.unshift({
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      heure,
+      poids,
+      prix,
+      total
+    });
+
+    sauvegarderHistorique();
+    afficherHistorique();
+    mettreAJourStatistiques();
+    envoyerEntreeSupabase(historique[0]);
+  }
+  function supprimerEntree(id){
+    historique = historique.filter(entree => entree.id !== id);
+    sauvegarderHistorique();
+    afficherHistorique();
+    mettreAJourStatistiques();
+    supprimerEntreeSupabase(id);
+  }
+
+  function viderHistorique(){
+    if (historique.length === 0) return;
+    if (!confirm('Voulez-vous vraiment vider tout l\'historique ?')) return;
+    historique = [];
+    sauvegarderHistorique();
+    afficherHistorique();
+    mettreAJourStatistiques();
+    viderHistoriqueSupabase();
+  }
+
+  function afficherHistorique(){
+    listeHistoriqueEl.innerHTML = '';
+
+    if (historique.length === 0){
+      listeHistoriqueEl.innerHTML = `
+        <div class="etat-vide">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M3 12a9 9 0 109-9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M3 4v5h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div>Aucun calcul enregistré pour le moment.</div>
+        </div>`;
+      return;
+    }
+
+    historique.forEach(entree => {
+      const ligne = document.createElement('div');
+      ligne.className = 'ligne-historique';
+      ligne.innerHTML = `
+        <div class="infos-ligne">
+          <span class="heure-ligne">${entree.heure}</span>
+          <span class="detail-ligne"><b>${formaterPoids(entree.poids)}</b> × ${formaterMontant(entree.prix)}</span>
+        </div>
+        <span class="total-ligne">${formaterMontant(entree.total)}</span>
+        <button class="btn-supprimer-ligne" title="Supprimer cette ligne" data-id="${entree.id}">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m2 0l-.7 12.1a2 2 0 01-2 1.9H8.7a2 2 0 01-2-1.9L6 7h12z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>`;
+      listeHistoriqueEl.appendChild(ligne);
+    });
+
+    // Attache les événements de suppression individuelle
+    listeHistoriqueEl.querySelectorAll('.btn-supprimer-ligne').forEach(bouton => {
+      bouton.addEventListener('click', () => supprimerEntree(bouton.dataset.id));
+    });
+  }
+
+  // ---------- Statistiques ----------
+  function mettreAJourStatistiques(){
+    const nombre = historique.length;
+    const poidsTotal = historique.reduce((somme, e) => somme + e.poids, 0);
+    const montantTotalCumule = historique.reduce((somme, e) => somme + e.total, 0);
+
+    statNombreEl.textContent = formateurNombre.format(nombre);
+    statPoidsEl.textContent = formaterPoids(poidsTotal);
+    statMontantEl.textContent = formaterMontant(montantTotalCumule);
+  }
+
+  // ---------- Toast de confirmation ----------
+  function afficherToast(texte){
+    toastTexteEl.textContent = texte;
+    toastEl.classList.add('visible');
+    clearTimeout(toastMinuteur);
+    toastMinuteur = setTimeout(() => toastEl.classList.remove('visible'), 2200);
+  }
+
+  // ---------- Copier le montant ----------
+  async function copierMontant(){
+    const { total } = calculerEtAfficher();
+    const texte = formaterMontant(total);
+
+    try{
+      if (navigator.clipboard && window.isSecureContext){
+        await navigator.clipboard.writeText(texte);
+      } else {
+        // Repli pour les contextes non sécurisés / anciens navigateurs
+        const zoneTemp = document.createElement('textarea');
+        zoneTemp.value = texte;
+        zoneTemp.style.position = 'fixed';
+        zoneTemp.style.opacity = '0';
+        document.body.appendChild(zoneTemp);
+        zoneTemp.select();
+        document.execCommand('copy');
+        document.body.removeChild(zoneTemp);
+      }
+      afficherToast('Montant copié : ' + texte);
+    }catch(erreur){
+      afficherToast('Impossible de copier le montant.');
+    }
+  }
+
+  // ---------- Effacer ----------
+  function effacerFormulaire(){
+    champPoids.value = '';
+    champPrix.value = '';
+    document.querySelectorAll('.btn-prix').forEach(b => b.classList.remove('actif'));
+    calculerEtAfficher();
+    champPoids.focus();
+  }
+
+  // ---------- Événements ----------
+  champPoids.addEventListener('input', calculerEtAfficher);
+  champPrix.addEventListener('input', calculerEtAfficher);
+
+  // Ajoute l'entrée à l'historique quand l'utilisateur quitte le champ poids
+  // avec un calcul valide (évite d'enregistrer chaque frappe de clavier)
+  champPoids.addEventListener('change', () => {
+    const { poids, prix, total } = calculerEtAfficher();
+    if (poids > 0 && prix > 0) ajouterEntreeHistorique(poids, prix, total);
+  });
+  champPrix.addEventListener('change', () => {
+    const { poids, prix, total } = calculerEtAfficher();
+    if (poids > 0 && prix > 0) ajouterEntreeHistorique(poids, prix, total);
+  });
+
+  btnAjouterPrix.addEventListener('click', ajouterPrixPersonnalise);
+  champNouveauPrix.addEventListener('keydown', (evenement) => {
+    if (evenement.key === 'Enter'){
+      evenement.preventDefault();
+      ajouterPrixPersonnalise();
+    }
+  });
+
+  btnEffacer.addEventListener('click', effacerFormulaire);
+  btnCopier.addEventListener('click', copierMontant);
+  btnVider.addEventListener('click', viderHistorique);
+
+  // ---------- Initialisation ----------
+  async function initialiser(){
+    chargerPrixPersonnalises();
+    construirePrixRapides();
+    chargerHistorique();       // Affichage immédiat depuis le cache local (rapide)
+    afficherHistorique();
+    mettreAJourStatistiques();
+    calculerEtAfficher();
+
+    // Puis tentative de synchronisation avec Supabase (si configuré et en ligne)
+    const succes = await chargerHistoriqueDepuisSupabase();
+    if (succes){
+      afficherHistorique();
+      mettreAJourStatistiques();
+    }
+  }
+
+  initialiser();
+})();
+</script>
+
+</body>
+</html>
