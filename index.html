@@ -368,6 +368,22 @@ body{
   position: relative;
 }
 
+.marge-ligne{
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(240,207,108,0.2);
+  font-size: 13.5px;
+  color: var(--gris-doux);
+  position: relative;
+}
+
+.marge-ligne span{
+  font-weight: 700;
+  color: var(--succes);
+}
+
+.marge-ligne.negative span{ color: var(--danger); }
+
 /* ---------- Actions ---------- */
 .actions{
   display: grid;
@@ -407,11 +423,44 @@ body{
 .btn-or:hover{ filter: brightness(1.08); transform: translateY(-1px); }
 .btn:active{ transform: translateY(0) scale(0.97); }
 
+.btn-partager-large{
+  width: 100%;
+  margin-top: 10px;
+}
+
 /* ---------- Statistiques ---------- */
+.filtres-periode{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+  margin-bottom: 16px;
+}
+
+.btn-filtre{
+  padding: 8px 4px;
+  font-family: var(--police-corps);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--gris-doux);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-filtre:hover{ background: rgba(255,255,255,0.06); }
+
+.btn-filtre.actif{
+  background: linear-gradient(135deg, var(--or-fonce), var(--or-vif));
+  color: #1a1305;
+  border-color: transparent;
+}
+
 .grille-stats{
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
   text-align: center;
 }
 
@@ -445,6 +494,22 @@ body{
 }
 
 .entete-historique h2 svg{ width: 18px; height: 18px; }
+
+.actions-historique{ display: flex; gap: 8px; }
+
+.btn-export{
+  font-size: 12.5px;
+  color: var(--or-clair);
+  background: rgba(240,207,108,0.08);
+  border: 1px solid rgba(240,207,108,0.3);
+  padding: 7px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.btn-export:hover{ background: rgba(240,207,108,0.16); }
 
 .btn-vider{
   font-size: 12.5px;
@@ -510,6 +575,30 @@ body{
 .btn-supprimer-ligne:hover{ background: rgba(224,102,95,0.2); }
 .btn-supprimer-ligne svg{ width: 14px; height: 14px; }
 
+.btn-partager-ligne{
+  width: 30px; height: 30px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(240,207,108,0.08);
+  border: 1px solid rgba(240,207,108,0.25);
+  border-radius: 9px;
+  color: var(--or-vif);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 7px;
+}
+
+.btn-partager-ligne:hover{ background: rgba(240,207,108,0.18); }
+.btn-partager-ligne svg{ width: 14px; height: 14px; }
+
+.ligne-historique .marge-ligne-mini{
+  font-size: 11px;
+  color: var(--succes);
+}
+
+.ligne-historique .marge-ligne-mini.negative{ color: var(--danger); }
+
+.groupe-boutons-ligne{ display: flex; align-items: center; }
+
 .etat-vide{
   text-align: center;
   padding: 30px 10px;
@@ -518,6 +607,103 @@ body{
 }
 
 .etat-vide svg{ width: 30px; height: 30px; opacity: 0.4; margin-bottom: 10px; }
+
+/* ---------- Verrouillage par code PIN ---------- */
+.verrou-ecran{
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 22px;
+  padding: 30px;
+  background: radial-gradient(1200px 800px at 50% -10%, rgba(168,121,31,0.14), transparent 60%),
+              linear-gradient(180deg, #0b0a0d 0%, #08070a 60%, #0a0906 100%);
+  text-align: center;
+}
+
+.verrou-ecran.masque{ display: none; }
+
+.verrou-icone{ width: 40px; height: 40px; color: var(--or-vif); }
+
+.verrou-titre{
+  font-family: var(--police-titre);
+  font-size: 22px;
+  color: var(--or-clair);
+}
+
+.verrou-sous-titre{
+  font-size: 13.5px;
+  color: var(--gris-doux);
+  margin-top: -12px;
+  max-width: 280px;
+}
+
+.pastilles-pin{ display: flex; gap: 14px; }
+
+.pastille-pin{
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(240,207,108,0.4);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.pastille-pin.remplie{
+  background: var(--or-vif);
+  border-color: var(--or-vif);
+}
+
+.verrou-erreur{
+  font-size: 13px;
+  color: var(--danger);
+  min-height: 18px;
+}
+
+.pave-pin{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  width: 100%;
+  max-width: 280px;
+}
+
+.touche-pin{
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.10);
+  color: var(--blanc-chaud);
+  font-size: 22px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.touche-pin:active{ background: rgba(240,207,108,0.18); transform: scale(0.94); }
+.touche-pin.touche-vide{ visibility: hidden; }
+
+.verrou-lien{
+  font-size: 12.5px;
+  color: var(--gris-doux);
+  text-decoration: underline;
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.bouton-cadenas{
+  position: fixed;
+  bottom: 18px; right: 18px;
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 50%;
+  color: var(--gris-doux);
+  cursor: pointer;
+  z-index: 20;
+  backdrop-filter: blur(10px);
+}
+
+.bouton-cadenas svg{ width: 17px; height: 17px; }
 
 /* ---------- Signature ---------- */
 .signature{
@@ -606,7 +792,10 @@ body{
   .carte{ padding: 20px; border-radius: 20px; }
   .grille-prix{ grid-template-columns: repeat(3, 1fr); gap: 7px; }
   .btn-prix{ font-size: 12.5px; padding: 10px 4px; }
-  .grille-stats{ gap: 8px; }
+  .grille-stats{ gap: 6px; }
+  .grille-stats .valeur-stat{ font-size: 15px; }
+  .filtres-periode{ gap: 5px; }
+  .btn-filtre{ font-size: 11px; padding: 7px 2px; }
 }
 
 @media (min-width: 700px){
@@ -615,6 +804,38 @@ body{
 </style>
 </head>
 <body>
+
+<!-- ===================== ÉCRAN DE VERROUILLAGE (CODE PIN) ===================== -->
+<div class="verrou-ecran masque" id="verrouEcran">
+  <svg class="verrou-icone" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M8 11V7a4 4 0 118 0v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+  <div class="verrou-titre" id="verrouTitre">Code PIN</div>
+  <div class="verrou-sous-titre" id="verrouSousTitre">Entrez votre code à 4 chiffres pour accéder à Djado.</div>
+  <div class="pastilles-pin" id="pastillesPin">
+    <span class="pastille-pin"></span><span class="pastille-pin"></span>
+    <span class="pastille-pin"></span><span class="pastille-pin"></span>
+  </div>
+  <div class="verrou-erreur" id="verrouErreur"></div>
+  <div class="pave-pin" id="pavePin">
+    <button type="button" class="touche-pin" data-touche="1">1</button>
+    <button type="button" class="touche-pin" data-touche="2">2</button>
+    <button type="button" class="touche-pin" data-touche="3">3</button>
+    <button type="button" class="touche-pin" data-touche="4">4</button>
+    <button type="button" class="touche-pin" data-touche="5">5</button>
+    <button type="button" class="touche-pin" data-touche="6">6</button>
+    <button type="button" class="touche-pin" data-touche="7">7</button>
+    <button type="button" class="touche-pin" data-touche="8">8</button>
+    <button type="button" class="touche-pin" data-touche="9">9</button>
+    <button type="button" class="touche-pin touche-vide"></button>
+    <button type="button" class="touche-pin" data-touche="0">0</button>
+    <button type="button" class="touche-pin" data-touche="effacer">⌫</button>
+  </div>
+  <button type="button" class="verrou-lien" id="verrouLienIgnorer">Désactiver le code PIN</button>
+</div>
+
+<!-- Bouton flottant pour gérer le code PIN -->
+<button type="button" class="bouton-cadenas" id="boutonCadenas" title="Code PIN">
+  <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M8 11V7a4 4 0 118 0v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+</button>
 
 <div class="fond-ambiance"></div>
 
@@ -663,6 +884,18 @@ body{
       </div>
     </div>
 
+    <!-- Champ Prix de revente (optionnel, pour la marge) -->
+    <div class="groupe-champ">
+      <label for="champPrixRevente">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 17l5-5 4 4 7-8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 8h5v5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Prix de revente (FCFA) — optionnel
+      </label>
+      <div class="enveloppe-champ">
+        <input type="number" id="champPrixRevente" inputmode="numeric" step="1" min="0" placeholder="Pour calculer la marge">
+        <span class="unite">FCFA</span>
+      </div>
+    </div>
+
     <!-- Boutons de prix rapide -->
     <div class="prix-rapides">
       <span class="etiquette">Prix rapide du gramme</span>
@@ -683,6 +916,7 @@ body{
       <div class="libelle-total">Total à payer</div>
       <div class="montant-total" id="montantTotal">0 FCFA</div>
       <div class="detail-calcul" id="detailCalcul">0 g × 0 FCFA</div>
+      <div class="marge-ligne" id="margeLigne" hidden>Marge estimée : <span id="margeValeur">0 FCFA</span></div>
     </div>
 
     <!-- Actions -->
@@ -696,10 +930,20 @@ body{
         Copier le montant
       </button>
     </div>
+    <button class="btn btn-secondaire btn-partager-large" id="btnPartager">
+      <svg viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="2.5" stroke="currentColor" stroke-width="1.4"/><circle cx="6" cy="12" r="2.5" stroke="currentColor" stroke-width="1.4"/><circle cx="18" cy="19" r="2.5" stroke="currentColor" stroke-width="1.4"/><path d="M8.2 10.7l7.6-4.4M8.2 13.3l7.6 4.4" stroke="currentColor" stroke-width="1.4"/></svg>
+      Partager le reçu
+    </button>
   </main>
 
   <!-- ===================== STATISTIQUES ===================== -->
   <section class="carte carte-stats">
+    <div class="filtres-periode" id="filtresPeriode">
+      <button type="button" class="btn-filtre actif" data-periode="tout">Tout</button>
+      <button type="button" class="btn-filtre" data-periode="jour">Aujourd'hui</button>
+      <button type="button" class="btn-filtre" data-periode="semaine">Semaine</button>
+      <button type="button" class="btn-filtre" data-periode="mois">Mois</button>
+    </div>
     <div class="grille-stats">
       <div class="stat">
         <div class="valeur-stat" id="statNombre">0</div>
@@ -713,6 +957,10 @@ body{
         <div class="valeur-stat" id="statMontant">0 FCFA</div>
         <div class="libelle-stat">Montant total</div>
       </div>
+      <div class="stat">
+        <div class="valeur-stat" id="statMarge">0 FCFA</div>
+        <div class="libelle-stat">Marge totale</div>
+      </div>
     </div>
   </section>
 
@@ -723,7 +971,10 @@ body{
         <svg viewBox="0 0 24 24" fill="none"><path d="M3 12a9 9 0 109-9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M3 4v5h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Historique
       </h2>
-      <button class="btn-vider" id="btnVider">Vider tout</button>
+      <div class="actions-historique">
+        <button class="btn-export" id="btnExporter" title="Exporter en CSV">CSV</button>
+        <button class="btn-vider" id="btnVider">Vider tout</button>
+      </div>
     </div>
     <div class="liste-historique" id="listeHistorique"></div>
   </section>
@@ -753,25 +1004,47 @@ body{
   // ---------- Références DOM ----------
   const champPoids      = document.getElementById('champPoids');
   const champPrix       = document.getElementById('champPrix');
+  const champPrixRevente = document.getElementById('champPrixRevente');
   const montantTotalEl  = document.getElementById('montantTotal');
   const detailCalculEl  = document.getElementById('detailCalcul');
+  const margeLigneEl    = document.getElementById('margeLigne');
+  const margeValeurEl   = document.getElementById('margeValeur');
   const grillePrixEl    = document.getElementById('grillePrix');
   const champNouveauPrix = document.getElementById('champNouveauPrix');
   const btnAjouterPrix  = document.getElementById('btnAjouterPrix');
   const btnEffacer      = document.getElementById('btnEffacer');
   const btnCopier       = document.getElementById('btnCopier');
+  const btnPartager     = document.getElementById('btnPartager');
   const btnVider        = document.getElementById('btnVider');
+  const btnExporter     = document.getElementById('btnExporter');
   const listeHistoriqueEl = document.getElementById('listeHistorique');
+  const filtresPeriodeEl = document.getElementById('filtresPeriode');
   const statNombreEl    = document.getElementById('statNombre');
   const statPoidsEl     = document.getElementById('statPoids');
   const statMontantEl   = document.getElementById('statMontant');
+  const statMargeEl     = document.getElementById('statMarge');
   const toastEl         = document.getElementById('toast');
   const toastTexteEl    = document.getElementById('toastTexte');
   const badgeConnexionEl = document.getElementById('badgeConnexion');
 
+  // Éléments de l'écran de verrouillage PIN
+  const verrouEcranEl   = document.getElementById('verrouEcran');
+  const verrouTitreEl   = document.getElementById('verrouTitre');
+  const verrouSousTitreEl = document.getElementById('verrouSousTitre');
+  const pastillesPinEl  = document.getElementById('pastillesPin');
+  const verrouErreurEl  = document.getElementById('verrouErreur');
+  const pavePinEl       = document.getElementById('pavePin');
+  const verrouLienIgnorerEl = document.getElementById('verrouLienIgnorer');
+  const boutonCadenasEl = document.getElementById('boutonCadenas');
+
   const CLE_STOCKAGE = 'calculateurOr_historique';
   const CLE_PRIX_PERSO = 'calculateurOr_prixPersonnalises';
+  const CLE_PIN = 'calculateurOr_pin';
   const PRIX_PAR_DEFAUT = [65000, 66000, 67000, 68000, 69000, 70000];
+
+  let periodeActive = 'tout';
+  let codePinSaisie = '';
+  let modeConfigurationPin = false;
 
   // ---------- Configuration Supabase ----------
   // Remplacez ces deux valeurs par celles de votre projet Supabase
@@ -898,10 +1171,20 @@ body{
   function calculerEtAfficher(){
     const poids = parseFloat(champPoids.value.replace(',', '.')) || 0;
     const prix  = parseFloat(champPrix.value.replace(',', '.')) || 0;
+    const prixRevente = parseFloat((champPrixRevente.value || '').replace(',', '.')) || 0;
     const total = poids * prix;
+    const marge = prixRevente > 0 ? (prixRevente - prix) * poids : null;
 
     montantTotalEl.textContent = formaterMontant(total);
     detailCalculEl.textContent = formaterPoids(poids) + ' × ' + formaterMontant(prix).replace(' FCFA','') + ' FCFA';
+
+    if (marge !== null && poids > 0){
+      margeLigneEl.hidden = false;
+      margeLigneEl.classList.toggle('negative', marge < 0);
+      margeValeurEl.textContent = formaterMontant(marge);
+    } else {
+      margeLigneEl.hidden = true;
+    }
 
     // Petite animation d'éclat lors de la mise à jour
     montantTotalEl.classList.remove('eclat');
@@ -914,7 +1197,7 @@ body{
       document.querySelectorAll('.btn-prix').forEach(b => b.classList.remove('actif'));
     }
 
-    return { poids, prix, total };
+    return { poids, prix, prixRevente, marge, total };
   }
 
   // ---------- Historique (LocalStorage) ----------
@@ -968,8 +1251,11 @@ body{
       if (!reponse.ok) throw new Error('Réponse Supabase invalide');
       const lignes = await reponse.json();
       historique = lignes.map(ligne => ({
-        id: ligne.id, heure: ligne.heure, poids: Number(ligne.poids),
-        prix: Number(ligne.prix), total: Number(ligne.total)
+        id: ligne.id, heure: ligne.heure, horodatage: ligne.horodatage || ligne.created_at,
+        poids: Number(ligne.poids), prix: Number(ligne.prix),
+        prixRevente: ligne.prix_revente != null ? Number(ligne.prix_revente) : null,
+        marge: ligne.marge != null ? Number(ligne.marge) : null,
+        total: Number(ligne.total)
       }));
       sauvegarderHistorique();
       definirBadgeConnexion('connecte');
@@ -985,8 +1271,10 @@ body{
     appelSupabase(SUPABASE_TABLE, {
       method: 'POST',
       body: JSON.stringify({
-        id: entree.id, heure: entree.heure,
-        poids: entree.poids, prix: entree.prix, total: entree.total
+        id: entree.id, heure: entree.heure, horodatage: entree.horodatage,
+        poids: entree.poids, prix: entree.prix,
+        prix_revente: entree.prixRevente || null, marge: entree.marge,
+        total: entree.total
       })
     }).then(reponse => definirBadgeConnexion(reponse.ok ? 'connecte' : 'hors-ligne'))
       .catch(() => definirBadgeConnexion('hors-ligne'));
@@ -1004,7 +1292,7 @@ body{
       .catch(() => definirBadgeConnexion('hors-ligne'));
   }
 
-  function ajouterEntreeHistorique(poids, prix, total){
+  function ajouterEntreeHistorique(poids, prix, total, prixRevente, marge){
     if (poids <= 0 || prix <= 0) return;
 
     const maintenant = new Date();
@@ -1013,8 +1301,11 @@ body{
     historique.unshift({
       id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
       heure,
+      horodatage: maintenant.toISOString(),
       poids,
       prix,
+      prixRevente: prixRevente || null,
+      marge: marge != null ? marge : null,
       total
     });
 
@@ -1041,48 +1332,129 @@ body{
     viderHistoriqueSupabase();
   }
 
+  // ---------- Filtrage par période ----------
+  function obtenirHistoriqueFiltre(){
+    if (periodeActive === 'tout') return historique;
+
+    const maintenant = new Date();
+    let debut;
+
+    if (periodeActive === 'jour'){
+      debut = new Date(maintenant.getFullYear(), maintenant.getMonth(), maintenant.getDate());
+    } else if (periodeActive === 'semaine'){
+      const jourSemaine = (maintenant.getDay() + 6) % 7; // Lundi = 0
+      debut = new Date(maintenant.getFullYear(), maintenant.getMonth(), maintenant.getDate() - jourSemaine);
+    } else if (periodeActive === 'mois'){
+      debut = new Date(maintenant.getFullYear(), maintenant.getMonth(), 1);
+    } else {
+      return historique;
+    }
+
+    return historique.filter(entree => {
+      const date = new Date(entree.horodatage || 0);
+      return date >= debut;
+    });
+  }
+
+  function changerPeriode(periode){
+    periodeActive = periode;
+    document.querySelectorAll('.btn-filtre').forEach(b => {
+      b.classList.toggle('actif', b.dataset.periode === periode);
+    });
+    afficherHistorique();
+    mettreAJourStatistiques();
+  }
+
+  filtresPeriodeEl.querySelectorAll('.btn-filtre').forEach(bouton => {
+    bouton.addEventListener('click', () => changerPeriode(bouton.dataset.periode));
+  });
+
+  // ---------- Construction d'un texte de reçu partageable ----------
+  function construireTexteRecu(entree){
+    let texte = 'Djado — Reçu d\'achat d\'or\n';
+    texte += formaterPoids(entree.poids) + ' × ' + formaterMontant(entree.prix) + '\n';
+    texte += 'Total : ' + formaterMontant(entree.total);
+    if (entree.marge != null){
+      texte += '\nMarge estimée : ' + formaterMontant(entree.marge);
+    }
+    if (entree.heure){
+      texte += '\nHeure : ' + entree.heure;
+    }
+    return texte;
+  }
+
+  async function partagerTexte(texte){
+    try{
+      if (navigator.share){
+        await navigator.share({ text: texte });
+      } else {
+        await navigator.clipboard.writeText(texte);
+        afficherToast('Reçu copié (partage indisponible)');
+      }
+    }catch(erreur){
+      // L'utilisateur a peut-être annulé le partage : rien à faire
+    }
+  }
   function afficherHistorique(){
     listeHistoriqueEl.innerHTML = '';
+    const liste = obtenirHistoriqueFiltre();
 
-    if (historique.length === 0){
+    if (liste.length === 0){
       listeHistoriqueEl.innerHTML = `
         <div class="etat-vide">
           <svg viewBox="0 0 24 24" fill="none"><path d="M3 12a9 9 0 109-9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M3 4v5h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <div>Aucun calcul enregistré pour le moment.</div>
+          <div>Aucun calcul enregistré pour cette période.</div>
         </div>`;
       return;
     }
 
-    historique.forEach(entree => {
+    liste.forEach(entree => {
       const ligne = document.createElement('div');
       ligne.className = 'ligne-historique';
+      const margeHTML = entree.marge != null
+        ? `<span class="marge-ligne-mini${entree.marge < 0 ? ' negative' : ''}">Marge : ${formaterMontant(entree.marge)}</span>`
+        : '';
       ligne.innerHTML = `
         <div class="infos-ligne">
           <span class="heure-ligne">${entree.heure}</span>
           <span class="detail-ligne"><b>${formaterPoids(entree.poids)}</b> × ${formaterMontant(entree.prix)}</span>
+          ${margeHTML}
         </div>
         <span class="total-ligne">${formaterMontant(entree.total)}</span>
-        <button class="btn-supprimer-ligne" title="Supprimer cette ligne" data-id="${entree.id}">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m2 0l-.7 12.1a2 2 0 01-2 1.9H8.7a2 2 0 01-2-1.9L6 7h12z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>`;
+        <div class="groupe-boutons-ligne">
+          <button class="btn-partager-ligne" title="Partager ce reçu" data-id="${entree.id}">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="2.3" stroke="currentColor" stroke-width="1.4"/><circle cx="6" cy="12" r="2.3" stroke="currentColor" stroke-width="1.4"/><circle cx="18" cy="19" r="2.3" stroke="currentColor" stroke-width="1.4"/><path d="M8.2 10.7l7.6-4.4M8.2 13.3l7.6 4.4" stroke="currentColor" stroke-width="1.4"/></svg>
+          </button>
+          <button class="btn-supprimer-ligne" title="Supprimer cette ligne" data-id="${entree.id}">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m2 0l-.7 12.1a2 2 0 01-2 1.9H8.7a2 2 0 01-2-1.9L6 7h12z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>`;
       listeHistoriqueEl.appendChild(ligne);
     });
 
-    // Attache les événements de suppression individuelle
     listeHistoriqueEl.querySelectorAll('.btn-supprimer-ligne').forEach(bouton => {
       bouton.addEventListener('click', () => supprimerEntree(bouton.dataset.id));
+    });
+    listeHistoriqueEl.querySelectorAll('.btn-partager-ligne').forEach(bouton => {
+      bouton.addEventListener('click', () => {
+        const entree = historique.find(e => e.id === bouton.dataset.id);
+        if (entree) partagerTexte(construireTexteRecu(entree));
+      });
     });
   }
 
   // ---------- Statistiques ----------
   function mettreAJourStatistiques(){
-    const nombre = historique.length;
-    const poidsTotal = historique.reduce((somme, e) => somme + e.poids, 0);
-    const montantTotalCumule = historique.reduce((somme, e) => somme + e.total, 0);
+    const liste = obtenirHistoriqueFiltre();
+    const nombre = liste.length;
+    const poidsTotal = liste.reduce((somme, e) => somme + e.poids, 0);
+    const montantTotalCumule = liste.reduce((somme, e) => somme + e.total, 0);
+    const margeTotale = liste.reduce((somme, e) => somme + (e.marge || 0), 0);
 
     statNombreEl.textContent = formateurNombre.format(nombre);
     statPoidsEl.textContent = formaterPoids(poidsTotal);
     statMontantEl.textContent = formaterMontant(montantTotalCumule);
+    statMargeEl.textContent = formaterMontant(margeTotale);
   }
 
   // ---------- Toast de confirmation ----------
@@ -1122,9 +1494,135 @@ body{
   function effacerFormulaire(){
     champPoids.value = '';
     champPrix.value = '';
+    champPrixRevente.value = '';
     document.querySelectorAll('.btn-prix').forEach(b => b.classList.remove('actif'));
     calculerEtAfficher();
     champPoids.focus();
+  }
+
+  // ---------- Export CSV ----------
+  function exporterCSV(){
+    const liste = obtenirHistoriqueFiltre();
+    if (liste.length === 0){
+      afficherToast('Aucune donnée à exporter pour cette période.');
+      return;
+    }
+
+    const entetes = ['Heure', 'Poids (g)', 'Prix du gramme (FCFA)', 'Prix de revente (FCFA)', 'Marge (FCFA)', 'Total (FCFA)'];
+    const lignesCSV = liste.map(e => [
+      e.heure,
+      e.poids,
+      e.prix,
+      e.prixRevente || '',
+      e.marge != null ? e.marge : '',
+      e.total
+    ].join(';'));
+
+    const contenuCSV = '\uFEFF' + [entetes.join(';'), ...lignesCSV].join('\n');
+    const blob = new Blob([contenuCSV], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const lien = document.createElement('a');
+    lien.href = url;
+    lien.download = 'djado-historique-' + new Date().toISOString().slice(0, 10) + '.csv';
+    document.body.appendChild(lien);
+    lien.click();
+    document.body.removeChild(lien);
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
+
+  // ---------- Écran de verrouillage (code PIN) ----------
+  function pinEnregistre(){
+    try{ return localStorage.getItem(CLE_PIN); }catch(erreur){ return null; }
+  }
+
+  function afficherPastilles(){
+    const pastilles = pastillesPinEl.querySelectorAll('.pastille-pin');
+    pastilles.forEach((p, i) => p.classList.toggle('remplie', i < codePinSaisie.length));
+  }
+
+  function ouvrirVerrou(pourConfiguration){
+    modeConfigurationPin = !!pourConfiguration;
+    codePinSaisie = '';
+    verrouErreurEl.textContent = '';
+    afficherPastilles();
+
+    if (modeConfigurationPin){
+      verrouTitreEl.textContent = pinEnregistre() ? 'Modifier le code PIN' : 'Créer un code PIN';
+      verrouSousTitreEl.textContent = 'Choisissez un nouveau code à 4 chiffres.';
+      verrouLienIgnorerEl.textContent = pinEnregistre() ? 'Désactiver le code PIN' : 'Annuler';
+    } else {
+      verrouTitreEl.textContent = 'Code PIN';
+      verrouSousTitreEl.textContent = 'Entrez votre code à 4 chiffres pour accéder à Djado.';
+      verrouLienIgnorerEl.textContent = 'Mot de passe oublié ?';
+    }
+
+    verrouEcranEl.classList.remove('masque');
+  }
+
+  function fermerVerrou(){
+    verrouEcranEl.classList.add('masque');
+  }
+
+  function traiterSaisiePin(touche){
+    if (touche === 'effacer'){
+      codePinSaisie = codePinSaisie.slice(0, -1);
+      verrouErreurEl.textContent = '';
+      afficherPastilles();
+      return;
+    }
+    if (codePinSaisie.length >= 4) return;
+
+    codePinSaisie += touche;
+    afficherPastilles();
+
+    if (codePinSaisie.length === 4){
+      setTimeout(() => validerCodeComplet(), 150);
+    }
+  }
+
+  function validerCodeComplet(){
+    if (modeConfigurationPin){
+      try{
+        localStorage.setItem(CLE_PIN, codePinSaisie);
+        afficherToast('Code PIN enregistré');
+      }catch(erreur){
+        afficherToast('Impossible d\'enregistrer le code PIN');
+      }
+      fermerVerrou();
+      return;
+    }
+
+    if (codePinSaisie === pinEnregistre()){
+      fermerVerrou();
+    } else {
+      verrouErreurEl.textContent = 'Code incorrect, réessayez.';
+      codePinSaisie = '';
+      afficherPastilles();
+    }
+  }
+
+  pavePinEl.querySelectorAll('.touche-pin[data-touche]').forEach(bouton => {
+    bouton.addEventListener('click', () => traiterSaisiePin(bouton.dataset.touche));
+  });
+
+  verrouLienIgnorerEl.addEventListener('click', () => {
+    if (modeConfigurationPin){
+      if (pinEnregistre()){
+        try{ localStorage.removeItem(CLE_PIN); }catch(erreur){}
+        afficherToast('Code PIN désactivé');
+      }
+      fermerVerrou();
+    } else {
+      afficherToast('Contactez la personne qui a configuré le code.');
+    }
+  });
+
+  boutonCadenasEl.addEventListener('click', () => ouvrirVerrou(true));
+
+  function verifierVerrouAuDemarrage(){
+    if (pinEnregistre()){
+      ouvrirVerrou(false);
+    }
   }
 
   // ---------- Événements ----------
@@ -1134,13 +1632,14 @@ body{
   // Ajoute l'entrée à l'historique quand l'utilisateur quitte le champ poids
   // avec un calcul valide (évite d'enregistrer chaque frappe de clavier)
   champPoids.addEventListener('change', () => {
-    const { poids, prix, total } = calculerEtAfficher();
-    if (poids > 0 && prix > 0) ajouterEntreeHistorique(poids, prix, total);
+    const { poids, prix, total, prixRevente, marge } = calculerEtAfficher();
+    if (poids > 0 && prix > 0) ajouterEntreeHistorique(poids, prix, total, prixRevente, marge);
   });
   champPrix.addEventListener('change', () => {
-    const { poids, prix, total } = calculerEtAfficher();
-    if (poids > 0 && prix > 0) ajouterEntreeHistorique(poids, prix, total);
+    const { poids, prix, total, prixRevente, marge } = calculerEtAfficher();
+    if (poids > 0 && prix > 0) ajouterEntreeHistorique(poids, prix, total, prixRevente, marge);
   });
+  champPrixRevente.addEventListener('input', calculerEtAfficher);
 
   btnAjouterPrix.addEventListener('click', ajouterPrixPersonnalise);
   champNouveauPrix.addEventListener('keydown', (evenement) => {
@@ -1153,9 +1652,22 @@ body{
   btnEffacer.addEventListener('click', effacerFormulaire);
   btnCopier.addEventListener('click', copierMontant);
   btnVider.addEventListener('click', viderHistorique);
+  btnExporter.addEventListener('click', exporterCSV);
+  btnPartager.addEventListener('click', () => {
+    const { poids, prix, prixRevente, marge, total } = calculerEtAfficher();
+    if (poids <= 0 || prix <= 0){
+      afficherToast('Renseignez le poids et le prix avant de partager.');
+      return;
+    }
+    partagerTexte(construireTexteRecu({
+      heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+      poids, prix, prixRevente, marge, total
+    }));
+  });
 
   // ---------- Initialisation ----------
   async function initialiser(){
+    verifierVerrouAuDemarrage();
     chargerPrixPersonnalises();
     construirePrixRapides();
     chargerHistorique();       // Affichage immédiat depuis le cache local (rapide)
