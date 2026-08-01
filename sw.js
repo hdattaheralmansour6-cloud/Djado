@@ -4,7 +4,7 @@
    après la première ouverture.
    ========================================================================== */
 
-const NOM_CACHE = 'djado-v1';
+const NOM_CACHE = 'djado-v2';
 
 const FICHIERS_A_METTRE_EN_CACHE = [
   './',
